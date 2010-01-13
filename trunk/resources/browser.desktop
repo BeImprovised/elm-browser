@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=elm-eve
+Comment=Browser Webkit/Elementary
+Exec=browser
+Icon=browser
+Terminal=false
+Type=Application
+Categories=Application;Network;
