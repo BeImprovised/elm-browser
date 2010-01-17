@@ -19,6 +19,7 @@
 
 #include "callbacks.h"
 #include "gui.h"
+#include "dbsqlite.h"
 
 //globals
 Ecore_X_Window my_win, focus_win;
@@ -26,15 +27,16 @@ Ecore_Timer *timer = NULL, *timer1 = NULL;
 Evas_Object *win, *view, *page, *frame, *bt;
 Evas *e;
 EWebKit_Hit_Test_Contents contents;
-int x=0, y=0, mouse_down=0, old_x=0, old_y=0;
+int x=0, y=0, mouse_down=0, old_x=0, old_y=0, rotate=0, show_images=0, version=0, full_screen=0, req=0;
+char start_page[255], user_agent[255], browser_dir[255], home_dir[255], req_page[255];
 
 static void
 my_win_del(void *data, Evas_Object *obj, void *event_info)
 {
-	//save_state();
+	save_state();
 	//e_dbus_connection_close(conn);
-	//sqlite3_close(launcher);
-	//sqlite3_close(launcher_thread);
+	sqlite3_close(browser);
+
     //close webkit
     ewk_shutdown();
 
@@ -44,18 +46,18 @@ my_win_del(void *data, Evas_Object *obj, void *event_info)
 EAPI int
 elm_main(int argc, char **argv)
 {
-	//int ret;
-	//FILE *fp;
-	//char line[10], *ans;
-
+	if (argc > 1) {
+		strcpy(req_page, argv[1]);
+		req = 1;
+	}
 	//restore state
-	//printf("restoring state\n");
-	//restore_state();
+	printf("restoring state\n");
+	restore_state();
 
 	//set up win
 	printf("showing window\n");
 	win = elm_win_add(NULL, "elm-eve", ELM_WIN_BASIC);
-	elm_win_title_set(win, "elm-eve");
+	elm_win_title_set(win, "Ventura");
 	evas_object_smart_callback_add(win, "delete-request", my_win_del, NULL);
 
     e = evas_object_evas_get(win);
@@ -63,6 +65,11 @@ elm_main(int argc, char **argv)
 	// show the window
 	create_gui(win);
 	evas_object_show(win);
+
+	if(rotate) {
+		elm_win_rotation_set(win, 270);
+		elm_win_borderless_set(win, 1);
+	}
 
 	//init dbus 
 	//init_dbus_stuff();

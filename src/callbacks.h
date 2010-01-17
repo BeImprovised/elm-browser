@@ -16,9 +16,32 @@
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+//#include <Elementary.h>
 #include <EWebKit.h>
 
-void back_button_clicked(void *data, Evas_Object *obj, void *event_info);
-void fwd_button_clicked(void *data, Evas_Object *obj, void *event_info);
+extern Evas_Object *view, *page, *frame, *win, *bt, *url_en, *name_en, *add_bookmark_win;
+extern Evas *e;
+extern EWebKit_Hit_Test_Contents contents;
+extern int x, y, mouse_down, old_x, old_y;
 
-extern Evas_Object *view;
+Evas_Object *url_notify, *menu, *menu_bt, *en;
+
+void zoom_out(void);
+void zoom_in(void);
+void event_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event_info);
+void event_mouse_move(void *data, Evas *e, Evas_Object *obj, void *event_info);
+void event_mouse_up(void *data, Evas *e, Evas_Object *obj, void *event_info);
+void title_changed(void *data, Evas_Object *obj, void *event_info);
+void load_progress(void *data, Evas_Object *obj, void *event_info);
+void load_started(void *data, Evas_Object *obj, void *event_info);
+void load_finished(void *data, Evas_Object *obj, void *event_info);
+void nav_back(void *data, Evas_Object *obj, void *event_info);
+void nav_fwd(void *data, Evas_Object *obj, void *event_info);
+void nav_stop(void *data, Evas_Object *obj, void *event_info);
+void nav_reload(void *data, Evas_Object *obj, void *event_info);
+void show_menu(void *data, Evas_Object *obj, void *event_info);
+void show_url_win(void *data, Evas_Object *obj, void *event_info);
+void goto_url(void *data, Evas_Object *obj, void *event_info);
+void cancel_button_clicked(void *data, Evas_Object *obj, void *event_info);
+void save_bookmark(void *data, Evas_Object *obj, void *event_info);

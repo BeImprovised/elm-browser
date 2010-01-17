@@ -16,152 +16,414 @@
  
 #include "gui.h"
 #include "callbacks.h"
+#include "dbsqlite.h"
 
-void zoom_out(void)
+void toggle_full_screen(void)
 {
-   float zoom = ewk_webview_object_zoom_factor_get(view);
-   zoom -= 0.25;
-   if (zoom < 0.25) zoom = 0.25;
-   ewk_webview_object_zoom_factor_set(view, zoom);
-}
-
-void zoom_in(void)
-{
-   float zoom = ewk_webview_object_zoom_factor_get(view);
-   zoom += 0.25;
-   if (zoom > 4.0) zoom = 4.0;
-   ewk_webview_object_zoom_factor_set(view, zoom);
-}
-
-void event_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event_info)
-{
-	Evas_Event_Mouse_Down *ev = event_info;
-	
-	if (ev->button == 1) {
-		if (ev->flags == EVAS_BUTTON_DOUBLE_CLICK) zoom_in();
-		if (ev->flags == EVAS_BUTTON_TRIPLE_CLICK) zoom_out();
-		mouse_down = 1;
-		old_x = ev->canvas.x;
-		old_y = ev->canvas.y;
-		evas_object_focus_set(view, EINA_FALSE);
+	if(full_screen) {
+		elm_win_fullscreen_set(win, 0);
+		full_screen = 0;
 	}
-}
-
-void event_mouse_move(void *data, Evas *e, Evas_Object *obj, void *event_info)
-{
-	Evas_Event_Mouse_Move *ev = event_info;
-	int dx=0, dy=0;
-	
-	if (mouse_down == 0) return;
 	else {
-		dx = old_x - ev->cur.output.x;
-		dy = old_y - ev->cur.output.y;
-
-		ewk_webpage_object_scroll(page, dx, dy);
-
-		old_x = ev->cur.output.x;
-		old_y = ev->cur.output.y;
+		elm_win_fullscreen_set(win, 1);
+		full_screen = 1;
 	}
 }
 
-void event_mouse_up(void *data, Evas *e, Evas_Object *obj, void *event_info)
+void apply_settings(void *data, Evas_Object *obj, void *event_info)
 {
-	Evas_Event_Mouse_Down *ev = event_info;
+	int i=0, len=0, set=0, rot=2, f_s=2;
+	char ty[255];
 	
-	if (ev->button == 1) {
-		mouse_down = 0;
-		old_x = 0;
-		old_y = 0;
-		evas_object_focus_set(view, EINA_TRUE);
+	//get the values
+	rot = elm_check_state_get(rotate_ck);
+	show_images = elm_check_state_get(show_image_ck);
+	f_s = elm_check_state_get(full_screen_ck);
+	sprintf(start_page, "%s", elm_entry_entry_get(start_page_en));
+	sprintf(ty, "%s", elm_entry_entry_get(user_agent_en));
+
+	//apply immediate changes
+	if (rot) {
+		elm_win_rotation_set(win, 270);
+		//to refresh window
+		elm_win_borderless_set(win, 1);
+		rotate = 1;
 	}
+	if (!rot && rotate) {
+		elm_win_rotation_set(win, 0);
+		//to refresh window
+		elm_win_borderless_set(win, 1);
+		rotate = 0;
+	}
+
+	//full screen
+	if(f_s) {
+		elm_win_fullscreen_set(win, 1);
+		full_screen = 1;
+	}
+	if (!f_s && full_screen) {
+		elm_win_fullscreen_set(win, 0);
+		full_screen = 0;
+	}
+	
+	if (!show_images) {
+		//page->settings->setLoadsImagesAutomatically(0);
+	}
+	
+	//check for spaces or null in ty
+	len = strlen(ty);
+	if (len) {
+		for (i=0; i< len; i++) {
+			if (ty[i] == ' ') continue;
+			else set = 1;
+		}
+	}
+	//if ty contains many spaces
+	if (!set) strcpy(ty, "");
+	strcpy(user_agent, ty);
+
+	evas_object_del(set_page_win);
 }
 
-void title_changed(void *data, Evas_Object *obj, void *event_info)
+void close_win(void *data, Evas_Object *obj, void *event_info)
 {
-	const char *tit = ewk_webframe_object_title_get(frame);
-	elm_win_title_set(win, tit);
+	evas_object_del(data);
 }
 
-void load_progress(void *data, Evas_Object *obj, void *event_info)
+void goto_bookmark(void *data, Evas_Object *obj, void *event_info)
 {
-	char str[35];
+	
+	char *temp, ty[255];
+	Elm_Genlist_Item *item;
+	
+	item = elm_genlist_selected_item_get(data);
+	temp = (char *)elm_genlist_item_data_get(item);
+
+	get_bookmark_url(temp, ty);
+	ewk_webview_object_load_url(view, ty);
+	evas_object_del(bookmark_win);
+}
+
+char *gl_label_get(const void *data, Evas_Object *obj, const char *part)
+{
+	char *temp, *ty = (char *)data;
+
+	temp = strdup(ty);
+	return (temp);
+}
+
+Evas_Object *gl_icon_get(const void *data, Evas_Object *obj, const char *part)
+{
+	return NULL;
+}
+
+Eina_Bool gl_state_get(const void *data, Evas_Object *obj, const char *part)
+{
+   return 0;
+}
+
+void gl_del(const void *data, Evas_Object *obj)
+{
+}
+
+void show_bookmarks(void *data, Evas_Object *obj, void *event_info)
+{
+	Evas_Object *bg, *vbox, *bx, *gl;
+	
+	bookmark_win = elm_win_add(NULL, "bookmarks", ELM_WIN_BASIC);
+	elm_win_title_set(bookmark_win, "Bookmarks");
+	elm_win_autodel_set(bookmark_win, 1);
+	
+	//add background
+	bg = elm_bg_add(bookmark_win);
+	elm_win_resize_object_add(bookmark_win, bg);
+	evas_object_size_hint_weight_set(bg, 1.0, 1.0);
+	evas_object_show(bg);
+
+	//add vbox
+	vbox = elm_box_add(bookmark_win);
+	evas_object_size_hint_weight_set(vbox, 1.0, 1.0);
+	elm_win_resize_object_add(bookmark_win, vbox);
+	evas_object_show(vbox);
+	
+	//add a genlist
+	gl = elm_genlist_add(bookmark_win);
+	elm_object_scale_set(gl, 1.0);
+	elm_scroller_bounce_set(gl, 0 ,0);
+	evas_object_size_hint_weight_set(gl, 1.0, 1.0);
+	evas_object_size_hint_align_set(gl, -1.0, -1.0);
+	elm_box_pack_end(vbox, gl);
+	evas_object_show(gl);
+	evas_object_smart_callback_add(gl, "clicked", goto_bookmark, gl);
+
+	//genlist class defs
+	itc_gl.item_style     	= "default";
+	itc_gl.func.label_get 	= gl_label_get;
+	itc_gl.func.icon_get  	= gl_icon_get;
+	itc_gl.func.state_get 	= gl_state_get;
+	itc_gl.func.del       	= gl_del;
+	
+	//add bx
+	bx = elm_box_add(bookmark_win);
+    elm_box_horizontal_set(bx, 1);
+	elm_box_homogenous_set(bx, 1);
+	evas_object_size_hint_weight_set(bx, 1.0, 0.0);
+	evas_object_size_hint_align_set(bx, -1.0, 1.0);	
+	elm_box_pack_end(vbox, bx);
+	evas_object_show(bx);
+
+	//add Apply button
+	bt = elm_button_add(bookmark_win);
+	elm_button_label_set(bt, "Go");
+	evas_object_size_hint_weight_set(bt, 1.0, 0.0);
+	evas_object_size_hint_align_set(bt, -1.0, 0.0);	
+	elm_box_pack_end(bx, bt);
+	evas_object_show(bt);
+	evas_object_smart_callback_add(bt, "clicked", goto_bookmark, gl);
+
+	//add Done button
+	bt = elm_button_add(bookmark_win);
+	elm_button_label_set(bt, "Cancel");
+	evas_object_size_hint_weight_set(bt, 1.0, 0.0);
+	evas_object_size_hint_align_set(bt, -1.0, 0.0);    
+	elm_box_pack_end(bx, bt);
+	evas_object_show(bt);
+	evas_object_smart_callback_add(bt, "clicked", close_win, bookmark_win);
+
+	//populate the bookmarks list
+	populate_bookmarks(gl);
+	
+	evas_object_resize(bookmark_win, 480, 600);
+	evas_object_show(bookmark_win);
+	if (rotate) elm_win_rotation_set(bookmark_win, 270);
+}
+
+void show_settings_page(void *data, Evas_Object *obj, void *event_info)
+{
+	Evas_Object *bg, *vbox, *tb, *lb, *bx;
+	
+	set_page_win = elm_win_add(NULL, "set", ELM_WIN_BASIC);
+	elm_win_title_set(set_page_win, "Settings");
+	elm_win_autodel_set(set_page_win, 1);
+	
+	//add background
+	bg = elm_bg_add(set_page_win);
+	elm_win_resize_object_add(set_page_win, bg);
+	evas_object_size_hint_weight_set(bg, 1.0, 1.0);
+	evas_object_show(bg);
+
+	//add vbox
+	vbox = elm_box_add(set_page_win);
+	evas_object_size_hint_weight_set(vbox, 1.0, 1.0);
+	evas_object_size_hint_align_set(vbox, -1.0, -1.0);
+	elm_win_resize_object_add(set_page_win, vbox);
+	evas_object_show(vbox);
+
+	//add table
+	tb = elm_table_add(set_page_win);
+	elm_win_resize_object_add(set_page_win, tb);
+	evas_object_size_hint_weight_set(tb, 1.0, 1.0);
+	evas_object_size_hint_align_set(tb, -1.0, -1.0);
+	elm_box_pack_end(vbox, tb);
+	evas_object_show(tb);
+
+	//add labels
+	lb = elm_label_add(set_page_win);
+	elm_label_label_set(lb, "Rotate");
+	evas_object_size_hint_align_set(lb, 0.0, 0.5);
+	elm_table_pack(tb, lb, 0, 0, 1, 1);
+	evas_object_show(lb);
+
+	lb = elm_label_add(set_page_win);
+	elm_label_label_set(lb, "Full Screen");
+	evas_object_size_hint_align_set(lb, 0.0, 0.5);
+	elm_table_pack(tb, lb, 0, 1, 1, 1);
+	evas_object_show(lb);
+	
+	lb = elm_label_add(set_page_win);
+	elm_label_label_set(lb, "Show Images");
+	evas_object_size_hint_align_set(lb, 0.0, 0.5);
+	elm_table_pack(tb, lb, 0, 2, 1, 1);
+	evas_object_show(lb);
+
+	lb = elm_label_add(set_page_win);
+	elm_label_label_set(lb, "Start Page");
+	evas_object_size_hint_align_set(lb, 0.0, 0.5);
+	elm_table_pack(tb, lb, 0, 3, 1, 1);
+	evas_object_show(lb);
+
+	lb = elm_label_add(set_page_win);
+	elm_label_label_set(lb, "User Agent");
+	evas_object_size_hint_align_set(lb, 0.0, 0.5);
+	elm_table_pack(tb, lb, 0, 4, 1, 1);
+	evas_object_show(lb);
+
+	//add rotate checkbox
+	rotate_ck = elm_check_add(set_page_win);
+	elm_check_state_set(rotate_ck, rotate);
+	elm_table_pack(tb, rotate_ck, 1, 0, 1, 1);
+	evas_object_show(rotate_ck);
+
+	//add full screen checkbox
+	full_screen_ck = elm_check_add(set_page_win);
+	elm_check_state_set(full_screen_ck, full_screen);
+	elm_table_pack(tb, full_screen_ck, 1, 1, 1, 1);
+	evas_object_show(full_screen_ck);
+	
+	//add show images checkbox
+	show_image_ck = elm_check_add(set_page_win);
+	elm_check_state_set(show_image_ck, show_images);
+	elm_table_pack(tb, show_image_ck, 1, 2, 1, 1);
+	evas_object_show(show_image_ck);
+	
+	//add start page entry
+	start_page_en = elm_entry_add(set_page_win);
+    elm_entry_single_line_set(start_page_en, 1);
+	elm_entry_entry_set(start_page_en, start_page);
+	elm_table_pack(tb, start_page_en, 1, 3, 1, 1);
+	evas_object_show(start_page_en);
+
+	//add user agent entry
+	user_agent_en = elm_entry_add(set_page_win);
+    elm_entry_single_line_set(user_agent_en, 1);
+	elm_entry_entry_set(user_agent_en, user_agent);
+	elm_table_pack(tb, user_agent_en, 1, 4, 1, 1);
+	evas_object_show(user_agent_en);
+
+	//add bx
+	bx = elm_box_add(set_page_win);
+    elm_box_horizontal_set(bx, 1);
+	elm_box_homogenous_set(bx, 1);
+	evas_object_size_hint_weight_set(bx, 1.0, 1.0);
+	evas_object_size_hint_align_set(bx, -1.0, 1.0);	
+	elm_box_pack_end(vbox, bx);
+	evas_object_show(bx);
+
+	//add Apply button
+	bt = elm_button_add(set_page_win);
+	elm_button_label_set(bt, "Apply");
+	evas_object_size_hint_weight_set(bt, 1.0, 1.0);
+	evas_object_size_hint_align_set(bt, -1.0, 0.0);	
+	elm_box_pack_end(bx, bt);
+	evas_object_show(bt);
+	evas_object_smart_callback_add(bt, "clicked", apply_settings, NULL);
+
+	//add Done button
+	bt = elm_button_add(set_page_win);
+	elm_button_label_set(bt, "Cancel");
+	evas_object_size_hint_weight_set(bt, 1.0, 1.0);
+	evas_object_size_hint_align_set(bt, -1.0, 0.0);    
+	elm_box_pack_end(bx, bt);
+	evas_object_show(bt);
+	evas_object_smart_callback_add(bt, "clicked", close_win, set_page_win);
 	    
-	EWebKit_Event_Load_Progress *ev = event_info;
-	sprintf(str, "%d%%", ev->progress);
-	elm_button_label_set(menu_bt, str); 
+	evas_object_resize(set_page_win, 480, 600);
+	evas_object_show(set_page_win);
+	if (rotate) elm_win_rotation_set(set_page_win, 270);
 }
 
-void load_started(void *data, Evas_Object *obj, void *event_info)
+void add_bookmark(void *data, Evas_Object *obj, void *event_info)
 {
-	elm_button_label_set(menu_bt, "Loading ..");
-}
+	Evas_Object *bg, *vbox, *tb, *lb, *bx, *inwin;
+	
+	add_bookmark_win = elm_win_add(NULL, "add", ELM_WIN_BASIC);
+	elm_win_title_set(add_bookmark_win, "Add Bookmark");
+	elm_win_autodel_set(add_bookmark_win, 1);
+	
+	//add background
+	bg = elm_bg_add(add_bookmark_win);
+	elm_win_resize_object_add(add_bookmark_win, bg);
+	evas_object_size_hint_weight_set(bg, 1.0, 1.0);
+	evas_object_show(bg);
 
-void load_finished(void *data, Evas_Object *obj, void *event_info)
-{
-	elm_button_label_set(menu_bt, "Menu");
-}
+	//add inwin
+	inwin = elm_win_inwin_add(add_bookmark_win);
+	elm_object_style_set(inwin, "minimal_vertical");
+	elm_win_resize_object_add(add_bookmark_win, inwin);
+	evas_object_show(inwin);
 
-void nav_back(void *data, Evas_Object *obj, void *event_info)
-{
-   ewk_webview_object_navigation_back(view);
-}
+	//add vbox
+	vbox = elm_box_add(add_bookmark_win);
+	evas_object_size_hint_weight_set(vbox, 1.0, 1.0);
+	evas_object_size_hint_align_set(vbox, -1.0, -1.0);
+	elm_win_inwin_content_set(inwin, vbox);
+	evas_object_show(vbox);
 
-void nav_fwd(void *data, Evas_Object *obj, void *event_info)
-{
-   ewk_webview_object_navigation_forward(view);
-}
+	//add table
+	tb = elm_table_add(add_bookmark_win);
+	elm_win_resize_object_add(add_bookmark_win, tb);
+	evas_object_size_hint_weight_set(tb, 1.0, 1.0);
+	evas_object_size_hint_align_set(tb, -1.0, -1.0);
+	elm_box_pack_end(vbox, tb);
+	evas_object_show(tb);
 
-void nav_reload(void *data, Evas_Object *obj, void *event_info)
-{
-   ewk_webview_object_navigation_reload(view);
-}
+	//add labels
+	lb = elm_label_add(add_bookmark_win);
+	elm_label_label_set(lb, "Name");
+	evas_object_size_hint_align_set(lb, 0.0, 0.5);
+	elm_table_pack(tb, lb, 0, 0, 1, 1);
+	evas_object_show(lb);
 
-void show_menu(void *data, Evas_Object *obj, void *event_info)
-{
-	elm_menu_move(data, 50, 300);
-	evas_object_show(data);
-}
+	lb = elm_label_add(add_bookmark_win);
+	elm_label_label_set(lb, "URL");
+	evas_object_size_hint_align_set(lb, 0.0, 0.5);
+	elm_table_pack(tb, lb, 0, 1, 1, 1);
+	evas_object_show(lb);
 
-void show_url_win(void *data, Evas_Object *obj, void *event_info)
-{
-	Evas_Object *notify = data;
+	//add name entry
+	name_en = elm_entry_add(add_bookmark_win);
+    elm_entry_single_line_set(name_en, 1);
+	elm_entry_entry_set(name_en, ewk_webframe_object_title_get(frame));
+	elm_table_pack(tb, name_en, 1, 0, 1, 1);
+	evas_object_show(name_en);
 
-	evas_object_hide(menu);
-	elm_entry_select_all(en);
-	evas_object_show(notify);
-}
+	//add url entry
+	url_en = elm_entry_add(add_bookmark_win);
+    elm_entry_single_line_set(url_en, 1);
+	elm_entry_entry_set(url_en, ewk_webframe_object_url_get(frame));
+	elm_table_pack(tb, url_en, 1, 1, 1, 1);
+	evas_object_show(url_en);
 
-void goto_url(void *data, Evas_Object *obj, void *event_info)
-{
-	Evas_Object *en = data;
-	char url[255];
+	//add bx
+	bx = elm_box_add(add_bookmark_win);
+    elm_box_horizontal_set(bx, 1);
+	elm_box_homogenous_set(bx, 1);
+	evas_object_size_hint_weight_set(bx, 1.0, 1.0);
+	evas_object_size_hint_align_set(bx, -1.0, 1.0);	
+	elm_box_pack_end(vbox, bx);
+	evas_object_show(bx);
 
-	//TODO: Add error window for exception
-	sprintf(url, "http://%s", elm_entry_entry_get(en));
-	ewk_webview_object_load_url(view, url);
-	evas_object_hide(url_notify);
-}
+	//add save button
+	bt = elm_button_add(add_bookmark_win);
+	elm_button_label_set(bt, "Save");
+	evas_object_size_hint_weight_set(bt, 1.0, 1.0);
+	evas_object_size_hint_align_set(bt, -1.0, 0.0);	
+	elm_box_pack_end(bx, bt);
+	evas_object_show(bt);
+	evas_object_smart_callback_add(bt, "clicked", save_bookmark, NULL);
 
-void cancel_button_clicked(void *data, Evas_Object *obj, void *event_info)
-{
-	evas_object_hide(data);
+	//add Done button
+	bt = elm_button_add(add_bookmark_win);
+	elm_button_label_set(bt, "Cancel");
+	evas_object_size_hint_weight_set(bt, 1.0, 1.0);
+	evas_object_size_hint_align_set(bt, -1.0, 0.0);    
+	elm_box_pack_end(bx, bt);
+	evas_object_show(bt);
+	evas_object_smart_callback_add(bt, "clicked", close_win, add_bookmark_win);
+	    
+	evas_object_resize(add_bookmark_win, 480, 600);
+	evas_object_show(add_bookmark_win);
+	if (rotate) elm_win_rotation_set(add_bookmark_win, 270);
 }
 
 void create_gui(Evas_Object *win)
 {
 
 	Elm_Menu_Item *item;
-    Evas_Object *bg, *ly, *bx, *ic, *lb;
+    Evas_Object *ly, *bx, *ic, *lb;
 	
 	//init webkit-efl
     ewk_init(e);
-
-	//add a background
-	/*bg = elm_bg_add(win);
-    evas_object_size_hint_weight_set(bg, 1.0, 1.0);
-    evas_object_size_hint_align_set(bg, -1.0, -1.0);
-	elm_win_resize_object_add(win, bg);
-    evas_object_show(bg);*/	
 	
     //add the webview
     view = ewk_webview_object_add(e);
@@ -178,7 +440,8 @@ void create_gui(Evas_Object *win)
 
 	//set webview defaults
 	ewk_webview_object_theme_set(view, "/usr/share/browser/default.edj");
-    ewk_webview_object_load_url(view, "http://www.google.com/m");
+	if (req) ewk_webview_object_load_url(view, req_page);
+	else ewk_webview_object_load_url(view, start_page);
 	ewk_webview_object_zoom_factor_set(view, 1.0);
 	
 	//for scrolling
@@ -211,6 +474,7 @@ void create_gui(Evas_Object *win)
 	elm_box_horizontal_set(bx, 1);
 	evas_object_show(bx);
 
+	//TODO: cater for https pages
 	//add a label
 	lb = elm_label_add(win);
 	elm_label_label_set(lb, "http://");
@@ -242,8 +506,22 @@ void create_gui(Evas_Object *win)
 	    
 	//add a menu
 	menu = elm_menu_add(win);
-	item = elm_menu_item_add(menu, NULL, NULL, "Reload", nav_reload, NULL);
-	item = elm_menu_item_add(menu, NULL, NULL, "URL", show_url_win, url_notify);
+	    //Bookmarks
+	item = elm_menu_item_add(menu, NULL, NULL, "Bookmarks", NULL, NULL);
+    elm_menu_item_add(menu, item, NULL, "Add", add_bookmark, NULL);
+	elm_menu_item_add(menu, item, NULL, "Show", show_bookmarks, NULL);
+	    //page menu
+	item = elm_menu_item_add(menu, NULL, NULL, "Page", NULL, NULL);
+	elm_menu_item_add(menu, item, NULL, "Reload", nav_reload, NULL);
+	elm_menu_item_add(menu, item, NULL, "Stop", nav_stop, NULL);
+	    //url
+	elm_menu_item_add(menu, NULL, NULL, "URL", show_url_win, url_notify);
+	    //full screen
+	elm_menu_item_add(menu, NULL, NULL, "Full Screen", (void *)toggle_full_screen, NULL);
+	    //zoom out
+	elm_menu_item_add(menu, NULL, NULL, "Zoom Out", (void *)zoom_out, NULL);
+	    //Settings
+	elm_menu_item_add(menu, NULL, NULL, "Settings", show_settings_page, NULL);
 
 	//add menu button
 	menu_bt = elm_button_add(win);
