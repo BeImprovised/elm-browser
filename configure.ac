@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl Created by Anjuta application wizard.
 
-AC_INIT(browser, 0.1)
+AC_INIT(ventura, 0.1)
 
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AC_CONFIG_HEADERS([config.h])
@@ -12,22 +12,12 @@ AC_PROG_CC
 AM_PROG_CC_STDC
 AC_HEADER_STDC
 
-
-
-
-
-
 AM_PROG_LIBTOOL
 
-
-
-PKG_CHECK_MODULES(BROWSER, [elementary ewebkit])
-
-
+PKG_CHECK_MODULES(VENTURA, [elementary ewebkit])
 
 
 AC_OUTPUT([
 Makefile
 src/Makefile
-
 ])

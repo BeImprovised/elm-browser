@@ -3,8 +3,8 @@
 
 SUBDIRS = src 
 
-browserdocdir = ${prefix}/doc/browser
-browserdoc_DATA = \
+venturadocdir = ${prefix}/doc/ventura
+venturadoc_DATA = \
 	README\
 	COPYING\
 	AUTHORS\
@@ -13,9 +13,9 @@ browserdoc_DATA = \
 	NEWS
 
 
-EXTRA_DIST = $(browserdoc_DATA)
+EXTRA_DIST = $(venturadoc_DATA)
 
 
 # Remove doc directory on uninstall
 uninstall-local:
-	-rm -r $(browserdocdir)
+	-rm -r $(venturadocdir)
