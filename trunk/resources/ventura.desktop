@@ -1,9 +1,9 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=elm-eve
-Comment=Browser Webkit/Elementary
-Exec=browser
-Icon=browser
+Name=Ventura
+Comment=Browser 
+Exec=ventura
+Icon=ventura
 Terminal=false
 Type=Application
 Categories=Application;Network;

@@ -2,21 +2,21 @@
 
 ## Created by Anjuta
 
-uidir = $(datadir)/browser/ui
+uidir = $(datadir)/ventura/ui
 
 AM_CPPFLAGS = \
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" \
 	-DPACKAGE_SRC_DIR=\""$(srcdir)"\" \
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\" \
-	$(BROWSER_CFLAGS)
+	$(VENTURA_CFLAGS)
 
 AM_CFLAGS =\
 	 -Wall\
 	 -g
 
-bin_PROGRAMS = browser
+bin_PROGRAMS = ventura
 
-browser_SOURCES = \
+ventura_SOURCES = \
 	callbacks.c \
 	callbacks.h \
 	main.c \
@@ -25,12 +25,12 @@ browser_SOURCES = \
 	dbsqlite.c \
 	dbsqlite.h
 
-browser_LDFLAGS = \
+ventura_LDFLAGS = \
 	-Wl,--export-dynamic
 
-browser_LDADD = $(BROWSER_LIBS)
+ventura_LDADD = $(VENTURA_LIBS)
 
 
 # Remove ui directory on uninstall
 uninstall-local:
-	-rm -r $(datadir)/browser
+	-rm -r $(datadir)/ventura
