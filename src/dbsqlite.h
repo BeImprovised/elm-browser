@@ -23,9 +23,9 @@ void restore_state(void);
 void get_bookmark_url(char *temp, char *ty);
 void add_bookmark_db(char *temp, char *ty);
 
-sqlite3 *browser;
+sqlite3 *ventura;
 
 extern int rotate, show_images, version, full_screen;
-extern char start_page[255], user_agent[255], browser_dir[255], home_dir[255];
+extern char start_page[255], user_agent[255], ventura_dir[255], home_dir[255];
 
 Elm_Genlist_Item_Class itc_gl;

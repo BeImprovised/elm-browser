@@ -439,7 +439,7 @@ void create_gui(Evas_Object *win)
 	ewk_callback_load_finished_add(view, load_finished, NULL);
 
 	//set webview defaults
-	ewk_webview_object_theme_set(view, "/usr/share/browser/default.edj");
+	ewk_webview_object_theme_set(view, "/usr/share/ventura/default.edj");
 	if (req) ewk_webview_object_load_url(view, req_page);
 	else ewk_webview_object_load_url(view, start_page);
 	ewk_webview_object_zoom_factor_set(view, 1.0);
@@ -450,7 +450,7 @@ void create_gui(Evas_Object *win)
 
 	//add a layout
 	ly = elm_layout_add(win);
-	elm_layout_file_set(ly, "/usr/share/browser/browser.edj", "layout");
+	elm_layout_file_set(ly, "/usr/share/ventura/ventura.edj", "layout");
 	evas_object_size_hint_weight_set(ly, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 	elm_win_resize_object_add(win, ly);
 	evas_object_show(ly);
@@ -533,7 +533,7 @@ void create_gui(Evas_Object *win)
 
 	//add an icon
 	ic = elm_icon_add(win);
-	elm_icon_file_set(ic, "/usr/share/browser/icon_left_arrow.png", NULL);
+	elm_icon_file_set(ic, "/usr/share/ventura/icon_left_arrow.png", NULL);
 	evas_object_size_hint_aspect_set(ic, EVAS_ASPECT_CONTROL_VERTICAL, 1, 1);
 
 	//add back button
@@ -547,7 +547,7 @@ void create_gui(Evas_Object *win)
 	    
 	//add an icon
 	ic = elm_icon_add(win);
-	elm_icon_file_set(ic, "/usr/share/browser/icon_right_arrow.png", NULL);
+	elm_icon_file_set(ic, "/usr/share/ventura/icon_right_arrow.png", NULL);
 	evas_object_size_hint_aspect_set(ic, EVAS_ASPECT_CONTROL_VERTICAL, 1, 1);
 
 	//add fwd button

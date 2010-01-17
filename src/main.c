@@ -3,12 +3,12 @@
  * main.c
  * Copyright (C) chaitanya chandel 2010 <cchandel@yahoo.com>
  * 
- * browser is free software: you can redistribute it and/or modify it
+ * ventura is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  * 
- * browser is distributed in the hope that it will be useful, but
+ * ventura is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU General Public License for more details.
@@ -28,14 +28,14 @@ Evas_Object *win, *view, *page, *frame, *bt;
 Evas *e;
 EWebKit_Hit_Test_Contents contents;
 int x=0, y=0, mouse_down=0, old_x=0, old_y=0, rotate=0, show_images=0, version=0, full_screen=0, req=0;
-char start_page[255], user_agent[255], browser_dir[255], home_dir[255], req_page[255];
+char start_page[255], user_agent[255], ventura_dir[255], home_dir[255], req_page[255];
 
 static void
 my_win_del(void *data, Evas_Object *obj, void *event_info)
 {
 	save_state();
 	//e_dbus_connection_close(conn);
-	sqlite3_close(browser);
+	sqlite3_close(ventura);
 
     //close webkit
     ewk_shutdown();
