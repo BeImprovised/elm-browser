@@ -29,7 +29,7 @@ void save_state(void)
 
 	//clear up the state table
 	sql = "DELETE FROM state";
-	db_ret = sqlite3_exec(browser, sql, NULL, NULL, &err);
+	db_ret = sqlite3_exec(ventura, sql, NULL, NULL, &err);
 	if (db_ret != SQLITE_OK) {
 	  if (err != NULL) {
 		  fprintf(stderr, "1 SQL error: %s\n", err);
@@ -40,7 +40,7 @@ void save_state(void)
 	//save rotate, show_images, start_page, user_agent
 	sql_st = sqlite3_mprintf("INSERT INTO state(version, rotate, show_images, full_screen, start_page, user_agent) VALUES(%d, %d, %d, %d, '%q', '%q')",
 							 version, rotate, show_images, full_screen, start_page, user_agent);
-	db_ret = sqlite3_exec(browser, sql_st, NULL, NULL, &err);
+	db_ret = sqlite3_exec(ventura, sql_st, NULL, NULL, &err);
 	if (db_ret != SQLITE_OK) {
 	  if (err != NULL) {
 		  fprintf(stderr, "2 SQL error: %s\n", err);
@@ -57,7 +57,7 @@ void first_run(void)
 
 	//create tables
 	sql ="CREATE TABLE state(key integer primary key, version integer, rotate integer, show_images integer, full_screen integer, start_page text, user_agent text)";
-	db_ret = sqlite3_exec(browser, sql, NULL, NULL, &err);
+	db_ret = sqlite3_exec(ventura, sql, NULL, NULL, &err);
 	if (db_ret != SQLITE_OK) {
 		if (err != NULL) {
 		  fprintf(stderr, "3 SQL error: %s\n", err);
@@ -65,7 +65,7 @@ void first_run(void)
 		}
 	}	
 	sql = "CREATE TABLE bookmarks(key INTEGER PRIMARY KEY, name text, url text)";
-	db_ret = sqlite3_exec(browser, sql, NULL, NULL, &err);
+	db_ret = sqlite3_exec(ventura, sql, NULL, NULL, &err);
 	if (db_ret != SQLITE_OK) {
 		if (err != NULL) {
 		  fprintf(stderr, "4 SQL error: %s\n", err);
@@ -74,7 +74,7 @@ void first_run(void)
 	}
 	// add default values
 	sql ="INSERT INTO state(version, rotate, show_images, full_screen, start_page, user_agent) VALUES(1, 0, 1, 0, 'http://www.google.com/m', '')";
-	db_ret = sqlite3_exec(browser, sql, NULL, NULL, &err);
+	db_ret = sqlite3_exec(ventura, sql, NULL, NULL, &err);
 	if (db_ret != SQLITE_OK) {
 		if (err != NULL) {
 		  fprintf(stderr, "5 SQL error: %s\n", err);
@@ -82,7 +82,7 @@ void first_run(void)
 		}
 	}
 	sql ="INSERT INTO bookmarks(name, url) VALUES('Google', 'http://www.google.com/m')";
-	db_ret = sqlite3_exec(browser, sql, NULL, NULL, &err);
+	db_ret = sqlite3_exec(ventura, sql, NULL, NULL, &err);
 	if (db_ret != SQLITE_OK) {
 		if (err != NULL) {
 		  fprintf(stderr, "5 SQL error: %s\n", err);
@@ -90,7 +90,7 @@ void first_run(void)
 		}
 	}
 	sql ="INSERT INTO bookmarks(name, url) VALUES('Yahoo', 'http://m.yahoo.com')";
-	db_ret = sqlite3_exec(browser, sql, NULL, NULL, &err);
+	db_ret = sqlite3_exec(ventura, sql, NULL, NULL, &err);
 	if (db_ret != SQLITE_OK) {
 		if (err != NULL) {
 		  fprintf(stderr, "5 SQL error: %s\n", err);
@@ -114,7 +114,7 @@ void modify_state(void)
 
 	//alter table
 	sql ="ALTER TABLE state ADD COLUMN full_screen integer";
-	db_ret = sqlite3_exec(browser, sql, NULL, NULL, &err);
+	db_ret = sqlite3_exec(ventura, sql, NULL, NULL, &err);
 	if (db_ret != SQLITE_OK) {
 		if (err != NULL) {
 		  fprintf(stderr, "3 SQL error: %s\n", err);
@@ -130,32 +130,32 @@ void restore_state(void)
 	const char  *tail;
 	sqlite3_stmt *stmt;
 	
-	//set browser directory
-	sprintf(browser_dir, "/usr/share/browser");
+	//set ventura directory
+	sprintf(ventura_dir, "/usr/share/ventura");
 	
 	//get the users home directory
 	const char *name = "HOME";
 	sprintf(home_dir, "%s", getenv(name));
-	sprintf(db, "%s/.browser/browser.db", home_dir);
+	sprintf(db, "%s/.ventura/ventura.db", home_dir);
 	
 	//connect to the db
-	db_ret = sqlite3_open(db, &browser);
+	db_ret = sqlite3_open(db, &ventura);
 	
 	if (db_ret == SQLITE_ERROR || db_ret == SQLITE_CANTOPEN) {
-		printf("6 SQL error: %s\n", sqlite3_errmsg(browser));
+		printf("6 SQL error: %s\n", sqlite3_errmsg(ventura));
 		printf("Creating new db file\n");
 		//exit(1);
-		ret = system("mkdir ~/.browser");
-		sqlite3_close(browser);
-		db_ret = sqlite3_open(db, &browser);
+		ret = system("mkdir ~/.ventura");
+		sqlite3_close(ventura);
+		db_ret = sqlite3_open(db, &ventura);
 	}
 	
 	//get the db version
 	sql = "SELECT version FROM state";
-	db_ret = sqlite3_prepare(browser, sql, strlen(sql), &stmt, &tail);
+	db_ret = sqlite3_prepare(ventura, sql, strlen(sql), &stmt, &tail);
 	if(db_ret != SQLITE_OK) {
-		if (strcmp(sqlite3_errmsg(browser), "no such table: state")==0) first_run();
-		printf("7 SQL error: %d %s\n", db_ret, sqlite3_errmsg(browser));
+		if (strcmp(sqlite3_errmsg(ventura), "no such table: state")==0) first_run();
+		printf("7 SQL error: %d %s\n", db_ret, sqlite3_errmsg(ventura));
 	}
 	else {
 		db_ret = sqlite3_step(stmt);
@@ -169,9 +169,9 @@ void restore_state(void)
 	
 	//load the state data from state table
 	sql = "SELECT rotate, show_images, full_screen, start_page, user_agent FROM state";
-	db_ret = sqlite3_prepare(browser, sql, strlen(sql), &stmt, &tail);
+	db_ret = sqlite3_prepare(ventura, sql, strlen(sql), &stmt, &tail);
 	if(db_ret != SQLITE_OK) {
-		printf("8 SQL error: %d %s\n", db_ret, sqlite3_errmsg(browser));
+		printf("8 SQL error: %d %s\n", db_ret, sqlite3_errmsg(ventura));
 	}
 	else {
 		//set up environment variables
@@ -195,9 +195,9 @@ void populate_bookmarks(Evas_Object *li)
 
 	elm_genlist_clear(li);
 	sql = "SELECT name, url FROM bookmarks";
-	db_ret = sqlite3_prepare(browser, sql, strlen(sql), &stmt, &tail);
+	db_ret = sqlite3_prepare(ventura, sql, strlen(sql), &stmt, &tail);
 	if(db_ret != SQLITE_OK) {
-		printf("9 SQL error: %s\n", sqlite3_errmsg(browser));
+		printf("9 SQL error: %s\n", sqlite3_errmsg(ventura));
 	}
 	while((db_ret = sqlite3_step(stmt)) == SQLITE_ROW) {
 		sprintf(ty, "%s", sqlite3_column_text(stmt, 0));
@@ -216,9 +216,9 @@ void get_bookmark_url(char *temp, char *ty)
 	sqlite3_stmt *stmt;
 
 	sql = sqlite3_mprintf("SELECT url FROM bookmarks WHERE name='%q'", temp);
-	db_ret = sqlite3_prepare(browser, sql, strlen(sql), &stmt, &tail);
+	db_ret = sqlite3_prepare(ventura, sql, strlen(sql), &stmt, &tail);
 	if(db_ret != SQLITE_OK) {
-		printf("10 SQL error: %s\n", sqlite3_errmsg(browser));
+		printf("10 SQL error: %s\n", sqlite3_errmsg(ventura));
 	}
 	while((db_ret = sqlite3_step(stmt)) == SQLITE_ROW) {
 		sprintf(ty, "%s", sqlite3_column_text(stmt, 0));
@@ -234,7 +234,7 @@ void add_bookmark_db(char *temp, char *ty)
 
 	sql = sqlite3_mprintf("INSERT INTO bookmarks(name, url) VALUES('%q', '%q')", temp, ty);
 	printf("%s\n", sql);
-	db_ret = sqlite3_exec(browser, sql, NULL, NULL, &err);
+	db_ret = sqlite3_exec(ventura, sql, NULL, NULL, &err);
 	if (db_ret != SQLITE_OK) {
 		if (err != NULL) {
 		  fprintf(stderr, "11 SQL error: %s\n", err);
