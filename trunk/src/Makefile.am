@@ -21,7 +21,9 @@ browser_SOURCES = \
 	callbacks.h \
 	main.c \
 	gui.c \
-	gui.h
+	gui.h \
+	dbsqlite.c \
+	dbsqlite.h
 
 browser_LDFLAGS = \
 	-Wl,--export-dynamic
