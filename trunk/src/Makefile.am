@@ -2,8 +2,6 @@
 
 ## Created by Anjuta
 
-uidir = $(datadir)/ventura/ui
-
 AM_CPPFLAGS = \
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" \
 	-DPACKAGE_SRC_DIR=\""$(srcdir)"\" \
@@ -30,7 +28,3 @@ ventura_LDFLAGS = \
 
 ventura_LDADD = $(VENTURA_LIBS)
 
-
-# Remove ui directory on uninstall
-uninstall-local:
-	-rm -r $(datadir)/ventura
