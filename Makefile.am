@@ -3,7 +3,7 @@
 
 SUBDIRS = src 
 
-venturadocdir = ${prefix}/doc/ventura
+venturadocdir = ${datadir}/doc/ventura
 venturadoc_DATA = \
 	README\
 	COPYING\
