@@ -439,7 +439,7 @@ void create_gui(Evas_Object *win)
 	ewk_callback_load_finished_add(view, load_finished, NULL);
 
 	//set webview defaults
-	ewk_webview_object_theme_set(view, "/usr/share/ventura/default.edj");
+	ewk_webview_object_theme_set(view, "/usr/share/webkit-1.0/theme/default.edj");
 	if (req) ewk_webview_object_load_url(view, req_page);
 	else ewk_webview_object_load_url(view, start_page);
 	ewk_webview_object_zoom_factor_set(view, 1.0);
@@ -562,5 +562,5 @@ void create_gui(Evas_Object *win)
 	evas_object_focus_set(view, EINA_TRUE);
 	    
     // make window full screen
-    evas_object_resize(win, 480, 600);
+    //evas_object_resize(win, 480, 600);
 }
