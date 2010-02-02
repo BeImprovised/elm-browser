@@ -20,6 +20,7 @@
 #include "callbacks.h"
 #include "gui.h"
 #include "dbsqlite.h"
+#include "dbus-stuff.h"
 
 //globals
 Ecore_X_Window my_win, focus_win;
@@ -40,6 +41,9 @@ my_win_del(void *data, Evas_Object *obj, void *event_info)
     //close webkit
     ewk_shutdown();
 
+	//dbus
+	release_display();
+	
 	elm_exit();
 }
 
@@ -51,11 +55,11 @@ elm_main(int argc, char **argv)
 		req = 1;
 	}
 	//restore state
-	printf("restoring state\n");
+	//printf("restoring state\n");
 	restore_state();
 
 	//set up win
-	printf("showing window\n");
+	//printf("showing window\n");
 	win = elm_win_add(NULL, "elm-eve", ELM_WIN_BASIC);
 	elm_win_title_set(win, "Ventura");
 	evas_object_smart_callback_add(win, "delete-request", my_win_del, NULL);
@@ -72,7 +76,7 @@ elm_main(int argc, char **argv)
 	}
 
 	//init dbus 
-	//init_dbus_stuff();
+	occupy_display();
 
 	elm_run();
 	ecore_main_loop_quit();

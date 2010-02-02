@@ -21,7 +21,9 @@ ventura_SOURCES = \
 	gui.c \
 	gui.h \
 	dbsqlite.c \
-	dbsqlite.h
+	dbsqlite.h \
+	dbus-stuff.c \
+	dbus-stuff.h
 
 ventura_LDFLAGS = \
 	-Wl,--export-dynamic

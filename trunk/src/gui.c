@@ -1,17 +1,20 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
 /*
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * gui.c
+ * Copyright (C) chaitanya chandel 2010 <cchandel@yahoo.com>
+ * 
+ * ventura is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
+ * ventura is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor Boston, MA 02110-1301,  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
  
 #include "gui.h"
@@ -200,7 +203,7 @@ void show_bookmarks(void *data, Evas_Object *obj, void *event_info)
 
 void show_settings_page(void *data, Evas_Object *obj, void *event_info)
 {
-	Evas_Object *bg, *vbox, *tb, *lb, *bx;
+	Evas_Object *bg, *vbox, *tb, *lb, *bx, *sc;
 	
 	set_page_win = elm_win_add(NULL, "set", ELM_WIN_BASIC);
 	elm_win_title_set(set_page_win, "Settings");
@@ -283,12 +286,25 @@ void show_settings_page(void *data, Evas_Object *obj, void *event_info)
 	elm_table_pack(tb, start_page_en, 1, 3, 1, 1);
 	evas_object_show(start_page_en);
 
+	//add scroller for user agent entry
+	sc = elm_scroller_add(set_page_win);
+	elm_scroller_content_min_limit(sc, 0, 1);
+	elm_scroller_policy_set(sc, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
+	elm_scroller_bounce_set(sc, 0, 0);
+	evas_object_size_hint_weight_set(sc, EVAS_HINT_EXPAND, 0.0);
+	evas_object_size_hint_align_set(sc, EVAS_HINT_FILL, EVAS_HINT_FILL);
+	elm_table_pack(tb, sc, 1, 4, 1, 1);
+	
 	//add user agent entry
 	user_agent_en = elm_entry_add(set_page_win);
     elm_entry_single_line_set(user_agent_en, 1);
-	elm_entry_entry_set(user_agent_en, user_agent);
-	elm_table_pack(tb, user_agent_en, 1, 4, 1, 1);
+	if(strlen(user_agent) > 0) elm_entry_entry_set(user_agent_en, user_agent);
+	else elm_entry_entry_set(user_agent_en, "Firefox/3.5");
+	evas_object_size_hint_weight_set(user_agent_en, EVAS_HINT_EXPAND, 0.0);
+	evas_object_size_hint_align_set(user_agent_en, EVAS_HINT_FILL, 0.5);
+	elm_scroller_content_set(sc, user_agent_en);
 	evas_object_show(user_agent_en);
+	evas_object_show(sc);
 
 	//add bx
 	bx = elm_box_add(set_page_win);
