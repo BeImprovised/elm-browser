@@ -70,7 +70,7 @@ void apply_settings(void *data, Evas_Object *obj, void *event_info)
 	}
 	
 	if (!show_images) {
-		//page->settings->setLoadsImagesAutomatically(0);
+		//webview->page()->settings()->setLoadsImagesAutomatically(0);
 	}
 	
 	//check for spaces or null in ty
@@ -436,7 +436,7 @@ void create_gui(Evas_Object *win)
 {
 
 	Elm_Menu_Item *item;
-    Evas_Object *ly, *bx, *ic, *lb;
+    Evas_Object *ly, *bx, *ic, *hs;
 	
 	//init webkit-efl
     ewk_init(e);
@@ -449,6 +449,7 @@ void create_gui(Evas_Object *win)
 	evas_object_event_callback_add(view, EVAS_CALLBACK_MOUSE_DOWN, event_mouse_down, view);
 	evas_object_event_callback_add(view, EVAS_CALLBACK_MOUSE_UP, event_mouse_up, view);
 	evas_object_event_callback_add(view, EVAS_CALLBACK_MOUSE_MOVE, event_mouse_move, view);
+	ewk_callback_url_changed_add(view, url_changed, NULL);
 	ewk_callback_title_changed_add(view, title_changed, NULL);
 	ewk_callback_load_progress_add(view, load_progress, NULL);
 	ewk_callback_load_started_add(view, load_started, NULL);
@@ -490,12 +491,14 @@ void create_gui(Evas_Object *win)
 	elm_box_horizontal_set(bx, 1);
 	evas_object_show(bx);
 
-	//TODO: cater for https pages
-	//add a label
-	lb = elm_label_add(win);
-	elm_label_label_set(lb, "http://");
-	elm_box_pack_end(bx, lb);
-	evas_object_show(lb);
+	//add a hoversel
+	hs = elm_hoversel_add(win);
+	elm_hoversel_hover_parent_set(hs, win);
+	elm_hoversel_label_set(hs, "http://");
+	elm_hoversel_item_add(hs, "http://", NULL, ELM_ICON_NONE, set_http, NULL);
+	elm_hoversel_item_add(hs, "https://", NULL, ELM_ICON_NONE, set_https, NULL);
+	elm_box_pack_end(bx, hs);
+	evas_object_show(hs);
 
 	//add an entry
 	en = elm_entry_add(win);

@@ -29,7 +29,7 @@ Evas_Object *win, *view, *page, *frame, *bt;
 Evas *e;
 EWebKit_Hit_Test_Contents contents;
 int x=0, y=0, mouse_down=0, old_x=0, old_y=0, rotate=0, show_images=0, version=0, full_screen=0, req=0;
-char start_page[255], user_agent[255], ventura_dir[255], home_dir[255], req_page[255];
+char start_page[255], user_agent[255], ventura_dir[255], home_dir[255], req_page[255], url_pre[10];
 
 static void
 my_win_del(void *data, Evas_Object *obj, void *event_info)
