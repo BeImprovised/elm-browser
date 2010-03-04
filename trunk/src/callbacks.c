@@ -79,6 +79,12 @@ void event_mouse_up(void *data, Evas *e, Evas_Object *obj, void *event_info)
 	}
 }
 
+void url_changed(void *data, Evas_Object *obj, void *event_info)
+{
+	EWebKit_Event_Url_Changed *ev = event_info;
+	printf("%s\n", ev->url);
+}
+
 void title_changed(void *data, Evas_Object *obj, void *event_info)
 {
 	const char *tit = ewk_webframe_object_title_get(frame);
@@ -132,11 +138,22 @@ void show_menu(void *data, Evas_Object *obj, void *event_info)
 
 void show_url_win(void *data, Evas_Object *obj, void *event_info)
 {
+	strcpy(url_pre, "http://");
 	Evas_Object *notify = data;
 
 	evas_object_hide(menu);
 	elm_entry_select_all(en);
 	evas_object_show(notify);
+}
+
+void set_http(void *data, Evas_Object *obj, void *event_info)
+{
+	strcpy(url_pre, "http://");
+}
+
+void set_https(void *data, Evas_Object *obj, void *event_info)
+{
+	strcpy(url_pre, "https://");
 }
 
 void goto_url(void *data, Evas_Object *obj, void *event_info)
@@ -145,8 +162,8 @@ void goto_url(void *data, Evas_Object *obj, void *event_info)
 	char url[255];
 
 	//TODO: Add error window for exception
-	//TODO: Cater for https pages
-	sprintf(url, "http://%s", elm_entry_entry_get(en));
+	sprintf(url, "%s%s", url_pre, elm_entry_entry_get(en));
+	printf("%s\n", url);
 	ewk_webview_object_load_url(view, url);
 	evas_object_hide(url_notify);
 }

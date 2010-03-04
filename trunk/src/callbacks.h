@@ -24,6 +24,7 @@ extern Evas_Object *view, *page, *frame, *win, *bt, *url_en, *name_en, *add_book
 extern Evas *e;
 extern EWebKit_Hit_Test_Contents contents;
 extern int x, y, mouse_down, old_x, old_y;
+extern char url_pre[10];
 
 Evas_Object *url_notify, *menu, *menu_bt, *en;
 
@@ -45,3 +46,4 @@ void show_url_win(void *data, Evas_Object *obj, void *event_info);
 void goto_url(void *data, Evas_Object *obj, void *event_info);
 void cancel_button_clicked(void *data, Evas_Object *obj, void *event_info);
 void save_bookmark(void *data, Evas_Object *obj, void *event_info);
+void url_changed(void *data, Evas_Object *obj, void *event_info);
