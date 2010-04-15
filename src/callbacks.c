@@ -18,6 +18,7 @@
  */
 
 #include "callbacks.h"
+#include "gui.h"
 #include "dbsqlite.h"
 
 void zoom_out(void)
@@ -44,8 +45,8 @@ void event_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event_info)
 		if (ev->flags == EVAS_BUTTON_DOUBLE_CLICK) zoom_in();
 		if (ev->flags == EVAS_BUTTON_TRIPLE_CLICK) zoom_out();
 		mouse_down = 1;
-		old_x = ev->canvas.x;
-		old_y = ev->canvas.y;
+		new_x = old_x = ev->canvas.x;
+		new_y = old_y = ev->canvas.y;
 		evas_object_focus_set(view, EINA_FALSE);
 	}
 }
@@ -53,10 +54,11 @@ void event_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event_info)
 void event_mouse_move(void *data, Evas *e, Evas_Object *obj, void *event_info)
 {
 	Evas_Event_Mouse_Move *ev = event_info;
-	int dx=0, dy=0;
+	/*int dx=0, dy=0;*/
 	
 	if (mouse_down == 0) return;
 	else {
+          /*
 		dx = old_x - ev->cur.output.x;
 		dy = old_y - ev->cur.output.y;
 
@@ -64,14 +66,23 @@ void event_mouse_move(void *data, Evas *e, Evas_Object *obj, void *event_info)
 
 		old_x = ev->cur.output.x;
 		old_y = ev->cur.output.y;
+                */
+		new_x = ev->cur.output.x;
+		new_y = ev->cur.output.y;
 	}
 }
 
 void event_mouse_up(void *data, Evas *e, Evas_Object *obj, void *event_info)
 {
 	Evas_Event_Mouse_Down *ev = event_info;
+	int dx=0, dy=0;
 	
 	if (ev->button == 1) {
+		dx = old_x - new_x;
+		dy = old_y - new_y;
+
+		ewk_webpage_object_scroll(page, dx, dy);
+
 		mouse_down = 0;
 		old_x = 0;
 		old_y = 0;
@@ -120,6 +131,34 @@ void nav_fwd(void *data, Evas_Object *obj, void *event_info)
    if (ewk_webview_object_navigation_can_go_forward(view)) ewk_webview_object_navigation_forward(view);
 }
 
+void nav_up(void *data, Evas_Object *obj, void *event_info)
+{
+   int w,h;
+   ewk_webpage_object_viewport_size_get(page, &w, &h);
+   ewk_webpage_object_scroll(page, 0, -0.8*h);
+}
+
+void nav_left(void *data, Evas_Object *obj, void *event_info)
+{
+   int w,h;
+   ewk_webpage_object_viewport_size_get(page, &w, &h);
+   ewk_webpage_object_scroll(page, -0.95*w, 0);
+}
+
+void nav_right(void *data, Evas_Object *obj, void *event_info)
+{
+   int w,h;
+   ewk_webpage_object_viewport_size_get(page, &w, &h);
+   ewk_webpage_object_scroll(page, 0.95*w, 0);
+}
+
+void nav_down(void *data, Evas_Object *obj, void *event_info)
+{
+   int w,h;
+   ewk_webpage_object_viewport_size_get(page, &w, &h);
+   ewk_webpage_object_scroll(page, 0, 0.8*h);
+}
+
 void nav_stop(void *data, Evas_Object *obj, void *event_info)
 {
    ewk_webview_object_navigation_stop(view);
@@ -128,6 +167,30 @@ void nav_stop(void *data, Evas_Object *obj, void *event_info)
 void nav_reload(void *data, Evas_Object *obj, void *event_info)
 {
    ewk_webview_object_navigation_reload(view);
+}
+
+void show_controls(void *data, Evas_Object *obj, void *event_info)
+{
+   evas_object_show(menu_bt);
+   evas_object_show(back_bt);
+   evas_object_show(fwd_bt);
+   evas_object_show(up_bt);
+   evas_object_show(down_bt);
+   evas_object_show(left_bt);
+   evas_object_show(right_bt);
+   evas_object_hide(controls_bt);
+}
+
+void hide_controls(void *data, Evas_Object *obj, void *event_info)
+{
+   evas_object_hide(menu_bt);
+   evas_object_hide(back_bt);
+   evas_object_hide(fwd_bt);
+   evas_object_hide(up_bt);
+   evas_object_hide(down_bt);
+   evas_object_hide(left_bt);
+   evas_object_hide(right_bt);
+   evas_object_show(controls_bt);
 }
 
 void show_menu(void *data, Evas_Object *obj, void *event_info)
