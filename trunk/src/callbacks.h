@@ -23,7 +23,7 @@
 extern Evas_Object *view, *page, *frame, *win, *bt, *url_en, *name_en, *add_bookmark_win;
 extern Evas *e;
 extern EWebKit_Hit_Test_Contents contents;
-extern int x, y, mouse_down, old_x, old_y;
+extern int x, y, mouse_down, old_x, old_y, new_x, new_y;
 extern char url_pre[10];
 
 Evas_Object *url_notify, *menu, *menu_bt, *en;
@@ -38,9 +38,15 @@ void load_progress(void *data, Evas_Object *obj, void *event_info);
 void load_started(void *data, Evas_Object *obj, void *event_info);
 void load_finished(void *data, Evas_Object *obj, void *event_info);
 void nav_back(void *data, Evas_Object *obj, void *event_info);
+void nav_up(void *data, Evas_Object *obj, void *event_info);
+void nav_left(void *data, Evas_Object *obj, void *event_info);
+void nav_right(void *data, Evas_Object *obj, void *event_info);
+void nav_down(void *data, Evas_Object *obj, void *event_info);
 void nav_fwd(void *data, Evas_Object *obj, void *event_info);
 void nav_stop(void *data, Evas_Object *obj, void *event_info);
 void nav_reload(void *data, Evas_Object *obj, void *event_info);
+void show_controls(void *data, Evas_Object *obj, void *event_info);
+void hide_controls(void *data, Evas_Object *obj, void *event_info);
 void show_menu(void *data, Evas_Object *obj, void *event_info);
 void show_url_win(void *data, Evas_Object *obj, void *event_info);
 void goto_url(void *data, Evas_Object *obj, void *event_info);

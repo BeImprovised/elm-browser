@@ -21,6 +21,12 @@
 #include "callbacks.h"
 #include "dbsqlite.h"
 
+Evas_Object *url_notify, *menu, *menu_bt, *back_bt, *fwd_bt, *right_bt, *left_bt, *up_bt, *down_bt, *controls_bt, *en, *set_page_win, *rotate_ck;
+Evas_Object *show_image_ck, *user_agent_en, *start_page_en, *bookmark_win;
+Evas_Object *add_bookmark_win, *name_en, *url_en, *full_screen_ck;
+
+Elm_Genlist_Item_Class itc_gl;
+
 void toggle_full_screen(void)
 {
 	if(full_screen) {
@@ -526,9 +532,9 @@ void create_gui(Evas_Object *win)
 	//add a menu
 	menu = elm_menu_add(win);
 	    //Bookmarks
-	item = elm_menu_item_add(menu, NULL, NULL, "Bookmarks", NULL, NULL);
-    elm_menu_item_add(menu, item, NULL, "Add", add_bookmark, NULL);
-	elm_menu_item_add(menu, item, NULL, "Show", show_bookmarks, NULL);
+	//	item = elm_menu_item_add(menu, NULL, NULL, "Bookmarks", NULL, NULL);
+	elm_menu_item_add(menu, NULL, NULL, "Bookmarks", show_bookmarks, NULL);
+    elm_menu_item_add(menu, NULL, NULL, "+Bookmark", add_bookmark, NULL);
 	    //page menu
 	item = elm_menu_item_add(menu, NULL, NULL, "Page", NULL, NULL);
 	elm_menu_item_add(menu, item, NULL, "Reload", nav_reload, NULL);
@@ -541,6 +547,7 @@ void create_gui(Evas_Object *win)
 	elm_menu_item_add(menu, NULL, NULL, "Zoom Out", (void *)zoom_out, NULL);
 	    //Settings
 	elm_menu_item_add(menu, NULL, NULL, "Settings", show_settings_page, NULL);
+	elm_menu_item_add(menu, NULL, NULL, "Hide Controls", hide_controls, ly);
 
 	//add menu button
 	menu_bt = elm_button_add(win);
@@ -556,13 +563,13 @@ void create_gui(Evas_Object *win)
 	evas_object_size_hint_aspect_set(ic, EVAS_ASPECT_CONTROL_VERTICAL, 1, 1);
 
 	//add back button
-	bt = elm_button_add(win);
-	elm_object_style_set(bt, "anchor");
-	elm_button_icon_set(bt, ic);
-	elm_layout_content_set(ly, "back", bt);
-	evas_object_show(bt);
+	back_bt = elm_button_add(win);
+	elm_object_style_set(back_bt, "anchor");
+	elm_button_icon_set(back_bt, ic);
+	elm_layout_content_set(ly, "back", back_bt);
+	evas_object_show(back_bt);
 	evas_object_show(ic);
-	evas_object_smart_callback_add(bt, "clicked", nav_back, menu);
+	evas_object_smart_callback_add(back_bt, "clicked", nav_back, menu);
 	    
 	//add an icon
 	ic = elm_icon_add(win);
@@ -570,14 +577,84 @@ void create_gui(Evas_Object *win)
 	evas_object_size_hint_aspect_set(ic, EVAS_ASPECT_CONTROL_VERTICAL, 1, 1);
 
 	//add fwd button
-	bt = elm_button_add(win);
-	elm_object_style_set(bt, "anchor");
-	elm_button_icon_set(bt, ic);
-	elm_layout_content_set(ly, "fwd", bt);
-	evas_object_show(bt);
+	fwd_bt = elm_button_add(win);
+	elm_object_style_set(fwd_bt, "anchor");
+	elm_button_icon_set(fwd_bt, ic);
+	elm_layout_content_set(ly, "fwd", fwd_bt);
+	evas_object_show(fwd_bt);
 	evas_object_show(ic);
-	evas_object_smart_callback_add(bt, "clicked", nav_fwd, menu);
+	evas_object_smart_callback_add(fwd_bt, "clicked", nav_fwd, menu);
 	    
+	//add an icon
+	ic = elm_icon_add(win);
+	elm_icon_file_set(ic, "/usr/share/ventura/icon_up_arrow.png", NULL);
+	evas_object_size_hint_aspect_set(ic, EVAS_ASPECT_CONTROL_VERTICAL, 1, 1);
+
+	//add up button
+	up_bt = elm_button_add(win);
+	elm_object_style_set(up_bt, "anchor");
+	elm_button_icon_set(up_bt, ic);
+	elm_layout_content_set(ly, "up", up_bt);
+	evas_object_show(up_bt);
+	evas_object_show(ic);
+	evas_object_smart_callback_add(up_bt, "clicked", nav_up, menu);
+
+	//add an icon
+	ic = elm_icon_add(win);
+	elm_icon_file_set(ic, "/usr/share/ventura/icon_down_arrow.png", NULL);
+	evas_object_size_hint_aspect_set(ic, EVAS_ASPECT_CONTROL_VERTICAL, 1, 1);
+
+	//add down button
+	down_bt = elm_button_add(win);
+	elm_object_style_set(down_bt, "anchor");
+	elm_button_icon_set(down_bt, ic);
+	elm_layout_content_set(ly, "down", down_bt);
+	evas_object_show(down_bt);
+	evas_object_show(ic);
+	evas_object_smart_callback_add(down_bt, "clicked", nav_down, menu);
+
+	//add an icon
+	ic = elm_icon_add(win);
+	elm_icon_file_set(ic, "/usr/share/ventura/icon_left_arrow.png", NULL);
+	evas_object_size_hint_aspect_set(ic, EVAS_ASPECT_CONTROL_VERTICAL, 1, 1);
+
+	//add left button
+	left_bt = elm_button_add(win);
+	elm_object_style_set(left_bt, "anchor");
+	elm_button_icon_set(left_bt, ic);
+	elm_layout_content_set(ly, "left", left_bt);
+	evas_object_show(left_bt);
+	evas_object_show(ic);
+	evas_object_smart_callback_add(left_bt, "clicked", nav_left, menu);
+
+	//add an icon
+	ic = elm_icon_add(win);
+	elm_icon_file_set(ic, "/usr/share/ventura/icon_right_arrow.png", NULL);
+	evas_object_size_hint_aspect_set(ic, EVAS_ASPECT_CONTROL_VERTICAL, 1, 1);
+
+	//add right button
+	right_bt = elm_button_add(win);
+	elm_object_style_set(right_bt, "anchor");
+	elm_button_icon_set(right_bt, ic);
+	elm_layout_content_set(ly, "right", right_bt);
+	evas_object_show(right_bt);
+	evas_object_show(ic);
+	evas_object_smart_callback_add(right_bt, "clicked", nav_right, menu);
+
+	//add an icon
+	ic = elm_icon_add(win);
+	elm_icon_file_set(ic, "/usr/share/ventura/icon_down_arrow.png", NULL);
+	evas_object_size_hint_aspect_set(ic, EVAS_ASPECT_CONTROL_VERTICAL, 1, 1);
+
+	//add controls button
+    controls_bt = elm_button_add(win);
+	elm_object_style_set(controls_bt, "anchor");
+	elm_button_icon_set(controls_bt, ic);
+	elm_layout_content_set(ly, "controls", controls_bt);
+	evas_object_hide(ic);
+	evas_object_hide(controls_bt);
+	evas_object_smart_callback_add(controls_bt, "clicked", show_controls, NULL);
+
 	evas_object_focus_set(view, EINA_TRUE);
 	    
     // make window full screen
