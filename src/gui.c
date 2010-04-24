@@ -539,12 +539,10 @@ void create_gui(Evas_Object *win)
 	item = elm_menu_item_add(menu, NULL, NULL, "Page", NULL, NULL);
 	elm_menu_item_add(menu, item, NULL, "Reload", nav_reload, NULL);
 	elm_menu_item_add(menu, item, NULL, "Stop", nav_stop, NULL);
+	elm_menu_item_add(menu, item, NULL, "Full Screen", (void *)toggle_full_screen, NULL);
+	elm_menu_item_add(menu, item, NULL, "Zoom Out", (void *)zoom_out, NULL);
 	    //url
 	elm_menu_item_add(menu, NULL, NULL, "URL", show_url_win, url_notify);
-	    //full screen
-	elm_menu_item_add(menu, NULL, NULL, "Full Screen", (void *)toggle_full_screen, NULL);
-	    //zoom out
-	elm_menu_item_add(menu, NULL, NULL, "Zoom Out", (void *)zoom_out, NULL);
 	    //Settings
 	elm_menu_item_add(menu, NULL, NULL, "Settings", show_settings_page, NULL);
 	elm_menu_item_add(menu, NULL, NULL, "Hide Controls", hide_controls, ly);
